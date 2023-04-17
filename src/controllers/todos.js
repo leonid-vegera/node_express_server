@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-import * as todoServices from "../services/todos.js";
+import * as todoServices from '../services/todos.js';
 
 export function getAll(req, res) {
   const todos = todoServices.getAll();
@@ -55,7 +55,7 @@ export const update = (req, res) => {
 
   const { title, completed } = req.body;
 
-  if (typeof title !== "string" || typeof completed !== "boolean") {
+  if (typeof title !== 'string' || typeof completed !== 'boolean') {
     res.sendStatus(422);
     return;
   }
@@ -96,9 +96,9 @@ export const updateMany = (req, res) => {
     const foundTodo = todoServices.getById(id);
     if (foundTodo) {
       todoServices.update({ id, title, completed });
-      results.push({ id, status: "OK" });
+      results.push({ id, status: 'OK' });
     } else {
-      errors.push({ id, status: "Not found" });
+      errors.push({ id, status: 'Not found' });
     }
   }
   res.send({ results, errors });

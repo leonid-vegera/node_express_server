@@ -8,7 +8,7 @@ export let todos = [
   { id: '3', title: 'React', completed: true },
   { id: '4', title: 'Vue', completed: false },
   { id: '5', title: 'Node', completed: false },
-  { id: '6', title: 'Angular', completed: false }
+  { id: '6', title: 'Angular', completed: false },
 ];
 
 export function getAll() {
@@ -24,7 +24,7 @@ export function creat(title) {
   const newTodo = {
     id: uuidv4(),
     title,
-    completed: false
+    completed: false,
   };
 
   todos.push(newTodo);
@@ -33,14 +33,14 @@ export function creat(title) {
 }
 
 export function remove(todoId) {
-  todos = todos.filter(todo => todo.id !== todoId);
+  todos = todos.filter((todo) => todo.id !== todoId);
 }
 
 export function removeMany(ids) {
   if (!ids.every(getById)) {
     throw new Error();
   }
-  todos = todos.filter(todo => !ids.includes(todo.id));
+  todos = todos.filter((todo) => !ids.includes(todo.id));
 }
 
 export function update({ id, title, completed }) {
@@ -48,13 +48,3 @@ export function update({ id, title, completed }) {
   Object.assign(todo, { title, completed });
   return todo;
 }
-
-// export function updateMany(todos) {
-//   for (const { id, title, completed } of todos) {
-//     const foundTodo = getById(id);
-//     if (!foundTodo) {
-//       continue;
-//     }
-//     update({ id, title, completed });
-//   }
-// }

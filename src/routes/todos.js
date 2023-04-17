@@ -15,17 +15,15 @@ router.delete('/:todoId', todoControllers.remove);
 
 router.put('/:todoId', todoControllers.update);
 
-router.patch('/', (req, res) => {
-  const { action } = req.query;
+const hasAction = (action) => {
+  return (req, res, next) => {
+    if (req.query.action === action) {
+      next();
+    } else {
+      next('route');
+    }
+  };
+};
 
-  if (action === 'delete') {
-    todoControllers.removeMany(req, res);
-    return;
-  }
-
-  if (action === 'update') {
-    todoControllers.updateMany(req, res);
-    return;
-  }
-  res.sendStatus(400);
-});
+router.patch('/', hasAction('delete'), todoControllers.removeMany);
+router.patch('/', hasAction('update'), todoControllers.updateMany);

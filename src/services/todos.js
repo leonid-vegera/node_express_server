@@ -1,50 +1,64 @@
 'use strict';
 
 import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
-import fs from 'fs/promises';
-
-const filePath = path.resolve('data', 'todos.json');
-
-const read = async () => {
-  const data = await fs.readFile(filePath, 'utf-8');
-  return JSON.parse(data);
-};
-
-const write = async (todos) => {
-  const data = JSON.stringify(todos, null, 2);
-  await fs.writeFile(filePath, data);
-};
+import { client } from '../utils/db.js';
 
 export async function getAll() {
-  return await read();
+  const result = await client.query(`
+    SELECT *
+    FROM todos
+    ORDER BY created_at
+  `);
+
+  return result.rows;
 }
 
 export async function getById(todoId) {
-  const todos = await read();
-  const foundTodo = todos.find((todo) => todo.id === todoId);
-  return foundTodo || null;
+  const result = await client.query(
+    `
+    SELECT *
+    FROM todos
+    WHERE id = $1;
+  `,
+    [todoId]
+  );
+
+  return result.rows[0] || null;
 }
 
 export async function creat(title) {
-  let todos = await read();
+  const id = uuidv4();
+  await client.query(
+    `
+    INSERT INTO todos (id, title)
+    VALUES ($1, $2)
+  `,
+    [id, title]
+  );
 
-  const newTodo = {
-    id: uuidv4(),
-    title,
-    completed: false,
-  };
-
-  todos.push(newTodo);
-
-  await write(todos);
+  const newTodo = await getById(id);
   return newTodo;
 }
 
 export async function remove(todoId) {
-  let todos = await read();
-  todos = todos.filter((todo) => todo.id !== todoId);
-  await write(todos);
+  await client.query(
+    `
+    DELETE FROM todos
+    WHERE id=$1
+  `,
+    [todoId]
+  );
+}
+
+export async function update({ id, title, completed }) {
+  await client.query(
+    `
+    UPDATE todos
+    SET title=$2, completed=$3
+    WHERE id=$1
+  `,
+    [id, title, completed]
+  );
 }
 
 export async function removeMany(ids) {
@@ -54,13 +68,4 @@ export async function removeMany(ids) {
   }
   todos = todos.filter((todo) => !ids.includes(todo.id));
   await write(todos);
-}
-
-export async function update({ id, title, completed }) {
-  let todos = await read();
-  const foundTodo = todos.find((todo) => todo.id === id);
-
-  Object.assign(foundTodo, { title, completed });
-  await write(todos);
-  return foundTodo;
 }

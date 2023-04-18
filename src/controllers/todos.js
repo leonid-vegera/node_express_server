@@ -2,14 +2,14 @@
 
 import * as todoServices from '../services/todos.js';
 
-export function getAll(req, res) {
-  const todos = todoServices.getAll();
+export async function getAll(req, res) {
+  const todos = await todoServices.getAll();
   res.send(todos);
 }
 
-export function getOne(req, res) {
+export async function getOne(req, res) {
   const { todoId } = req.params;
-  const foundTodo = todoServices.getById(todoId);
+  const foundTodo = await todoServices.getById(todoId);
   if (!foundTodo) {
     res.sendStatus(404);
     return;
@@ -17,7 +17,7 @@ export function getOne(req, res) {
   res.send(foundTodo);
 }
 
-export function add(req, res) {
+export async function add(req, res) {
   const { title } = req.body;
 
   if (!title) {
@@ -25,28 +25,28 @@ export function add(req, res) {
     return;
   }
 
-  const newTodo = todoServices.creat(title);
+  const newTodo = await todoServices.creat(title);
 
   res.statusCode = 201;
   res.send(newTodo);
 }
 
-export function remove(req, res) {
+export async function remove(req, res) {
   const { todoId } = req.params;
-  const foundTodo = todoServices.getById(todoId);
+  const foundTodo = await todoServices.getById(todoId);
 
   if (!foundTodo) {
     res.sendStatus(404);
     return;
   }
 
-  todoServices.remove(todoId);
+  await todoServices.remove(todoId);
   res.sendStatus(204);
 }
 
-export const update = (req, res) => {
+export const update = async (req, res) => {
   const { todoId } = req.params;
-  const foundTodo = todoServices.getById(todoId);
+  const foundTodo = await todoServices.getById(todoId);
 
   if (!foundTodo) {
     res.sendStatus(404);
@@ -60,11 +60,11 @@ export const update = (req, res) => {
     return;
   }
 
-  const todo = todoServices.update({ id: todoId, completed, title });
+  const todo = await todoServices.update({ id: todoId, completed, title });
   res.send(todo);
 };
 
-export const removeMany = (req, res) => {
+export const removeMany = async (req, res) => {
   const { ids } = req.body;
 
   if (!Array.isArray(ids)) {
@@ -73,7 +73,7 @@ export const removeMany = (req, res) => {
   }
 
   try {
-    todoServices.removeMany(ids);
+    await todoServices.removeMany(ids);
   } catch (err) {
     res.sendStatus(404);
     return;
@@ -81,7 +81,7 @@ export const removeMany = (req, res) => {
   res.sendStatus(204);
 };
 
-export const updateMany = (req, res) => {
+export const updateMany = async (req, res) => {
   const { items } = req.body;
 
   if (!Array.isArray(items)) {
@@ -93,9 +93,9 @@ export const updateMany = (req, res) => {
   const errors = [];
 
   for (const { id, title, completed } of items) {
-    const foundTodo = todoServices.getById(id);
+    const foundTodo = await todoServices.getById(id);
     if (foundTodo) {
-      todoServices.update({ id, title, completed });
+      await todoServices.update({ id, title, completed });
       results.push({ id, status: 'OK' });
     } else {
       errors.push({ id, status: 'Not found' });

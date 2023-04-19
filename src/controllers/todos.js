@@ -60,8 +60,10 @@ export const update = async (req, res) => {
     return;
   }
 
-  const todo = await todoServices.update({ id: todoId, completed, title });
-  res.send(todo);
+  await todoServices.update({ id: todoId, completed, title });
+
+  // const updatedTodo =
+  res.send(foundTodo);
 };
 
 export const removeMany = async (req, res) => {

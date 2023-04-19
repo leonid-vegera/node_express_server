@@ -59,6 +59,8 @@ export async function update({ id, title, completed }) {
   `,
     [id, title, completed]
   );
+
+  return getById(id);
 }
 
 export async function removeMany(ids) {
@@ -69,3 +71,15 @@ export async function removeMany(ids) {
   todos = todos.filter((todo) => !ids.includes(todo.id));
   await write(todos);
 }
+
+// export async function updateMany(todos) {
+//   for (const { id, title, completed } of todos) {
+//     const foundTodo = await getById(id);
+//
+//     if (!foundTodo) {
+//       continue;
+//     }
+//
+//     await update({ id, title, completed });
+//   }
+// }

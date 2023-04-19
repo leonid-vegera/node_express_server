@@ -17,12 +17,12 @@
   {
     "id": "4",
     "title": "Vue",
-    "completed": false
+    "completed": true
   },
   {
     "id": "5",
     "title": "Node",
-    "completed": true
+    "completed": false
   },
   {
     "id": "6",

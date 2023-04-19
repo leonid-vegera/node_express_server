@@ -59,26 +59,32 @@ export async function update({ id, title, completed }) {
   `,
     [id, title, completed]
   );
+}
 
-  return getById(id);
+function isValidID(id) {
+  const pattern = /^[0-9a-f\-]+$/;
+  return pattern.test(id);
 }
 
 export async function removeMany(ids) {
-  let todos = await read();
-  if (!ids.every(getById)) {
+  if (!ids.every(isValidID)) {
     throw new Error();
   }
-  todos = todos.filter((todo) => !ids.includes(todo.id));
-  await write(todos);
+  await client.query(
+    `
+    DELETE FROM todos
+    WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})
+  `
+  );
 }
 
 // export async function updateMany(todos) {
 //   for (const { id, title, completed } of todos) {
-//     const foundTodo = await getById(id);
-//
-//     if (!foundTodo) {
-//       continue;
-//     }
+//     // const foundTodo = await getById(id);
+//     //
+//     // if (!foundTodo) {
+//     //   continue;
+//     // }
 //
 //     await update({ id, title, completed });
 //   }

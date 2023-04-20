@@ -1,91 +1,81 @@
 'use strict';
 
-import { v4 as uuidv4 } from 'uuid';
-import { client } from '../utils/db.js';
+import { Todo } from '../models/Todo.js';
+import { sequelize } from '../utils/db.js';
+import { Op, QueryTypes } from 'sequelize';
 
-export async function getAll() {
-  const result = await client.query(`
-    SELECT *
-    FROM todos
-    ORDER BY created_at
-  `);
-
-  return result.rows;
+export function normalize({ id, title, completed }) {
+  return { id, title, completed };
 }
 
-export async function getById(todoId) {
-  const result = await client.query(
-    `
-    SELECT *
-    FROM todos
-    WHERE id = $1;
-  `,
-    [todoId]
-  );
+export async function getAll() {
+  return await Todo.findAll({
+    order: [['created_at', 'ASC']],
+  });
+}
 
-  return result.rows[0] || null;
+export function getById(todoId) {
+  return Todo.findByPk(todoId);
 }
 
 export async function creat(title) {
-  const id = uuidv4();
-  await client.query(
-    `
-    INSERT INTO todos (id, title)
-    VALUES ($1, $2)
-  `,
-    [id, title]
-  );
-
-  const newTodo = await getById(id);
-  return newTodo;
-}
-
-export async function remove(todoId) {
-  await client.query(
-    `
-    DELETE FROM todos
-    WHERE id=$1
-  `,
-    [todoId]
-  );
+  return Todo.create({ title });
 }
 
 export async function update({ id, title, completed }) {
-  await client.query(
-    `
-    UPDATE todos
-    SET title=$2, completed=$3
-    WHERE id=$1
-  `,
-    [id, title, completed]
+  return await Todo.update(
+    { title, completed },
+    {
+      where: {
+        id: id,
+      },
+    }
   );
 }
 
-function isValidID(id) {
-  const pattern = /^[0-9a-f\-]+$/;
-  return pattern.test(id);
+export async function updateMany(todos) {
+  const t = await sequelize.transaction();
+
+  try {
+    for (const { id, title, completed } of todos) {
+      await Todo.update(
+        { title, completed },
+        {
+          where: {
+            id: id,
+          },
+          transaction: t,
+        }
+      );
+    }
+
+    t.commit();
+  } catch (error) {
+    t.rollback();
+  }
+}
+
+export async function remove(todoId) {
+  return await Todo.destroy({
+    where: {
+      id: todoId,
+    },
+  });
 }
 
 export async function removeMany(ids) {
-  if (!ids.every(isValidID)) {
-    throw new Error();
-  }
-  await client.query(
-    `
-    DELETE FROM todos
-    WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})
-  `
-  );
-}
+  /* можно так */
+  return Todo.destroy({
+    where: {
+      id: {
+        [Op.in]: ids,
+      },
+    },
+  });
 
-// export async function updateMany(todos) {
-//   for (const { id, title, completed } of todos) {
-//     // const foundTodo = await getById(id);
-//     //
-//     // if (!foundTodo) {
-//     //   continue;
-//     // }
-//
-//     await update({ id, title, completed });
-//   }
-// }
+  /*  а можно так */
+  // return sequelize.query(`DELETE FROM todos WHERE id IN (:ids)`, {
+  //   replacements: { ids: ids },
+  //   type: QueryTypes.BULKDELETE,
+  // });
+}

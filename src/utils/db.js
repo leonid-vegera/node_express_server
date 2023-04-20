@@ -1,10 +1,20 @@
-import pkg from 'pg';
+/* This is Client */
 
-const { Client } = pkg;
+// import pkg from 'pg';
+// const { Client } = pkg;
+//
+// export const client = new Client({
+//   host: 'localhost',
+//   user: 'postgres',
+//   password: '140781',
+// });
+// await client.connect();
 
-export const client = new Client({
+/* This is Sequelize */
+
+import { Sequelize } from 'sequelize';
+
+export const sequelize = new Sequelize('postgres', 'postgres', '140781', {
   host: 'localhost',
-  user: 'postgres',
-  password: '140781',
+  dialect: 'postgres',
 });
-await client.connect();
